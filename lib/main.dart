@@ -10,32 +10,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Tienda Virtual',
       theme: ThemeData(
-        primaryColor: Colors.black,
+        primaryColor: Colors.deepPurple,
         scaffoldBackgroundColor: Colors.grey[200],
-        textTheme: TextTheme(
-          headline6: TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-          bodyText1: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-          ),
-          bodyText2: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            primary: Colors.black,
-            textStyle: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
+        fontFamily: 'Montserrat',
       ),
       home: CatalogScreen(),
     );
@@ -49,7 +26,10 @@ class CatalogScreen extends StatefulWidget {
 
 class _CatalogScreenState extends State<CatalogScreen> {
   int _currentIndex = 0;
+
   final List<Widget> _screens = [];
+
+  List<Product> _cart = [];
 
   @override
   void initState() {
@@ -64,8 +44,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
     ]);
   }
 
-  List<Product> _cart = [];
-
   void _addToCart(Product product) {
     setState(() {
       _cart.add(product);
@@ -79,23 +57,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   void _sendWhatsAppMessage() async {
-    final whatsappPhoneNumber = '+573224242416';
-
+    final String whatsappPhoneNumber = '+573224242416';
     final productList = _cart
         .map((product) =>
             '${product.name} - \$${NumberFormat('#,###', 'es_CO').format(product.price)}')
         .join('\n');
-
     final message =
         '¡Hola! Estos son los productos que he seleccionado:\n$productList';
-
     final whatsappUrl =
         'https://wa.me/$whatsappPhoneNumber/?text=${Uri.encodeQueryComponent(message)}';
 
-    if (await canLaunch(whatsappUrl)) {
-      await launch(whatsappUrl);
-    } else {
-      print('No se pudo abrir WhatsApp.');
+    try {
+      if (await canLaunch(whatsappUrl)) {
+        await launch(whatsappUrl);
+      } else {
+        print('No se pudo abrir WhatsApp.');
+      }
+    } catch (e) {
+      print('Error al abrir WhatsApp: $e');
     }
   }
 
@@ -118,7 +97,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             label: 'Carrito',
           ),
         ],
-        selectedItemColor: Theme.of(context).primaryColor,
+        selectedItemColor: Colors.deepPurple,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
@@ -157,29 +136,54 @@ class CatalogPage extends StatelessWidget {
       itemBuilder: (ctx, index) {
         final product = products[index];
         return Card(
-          elevation: 4,
-          margin: EdgeInsets.all(16),
+          elevation: 6.0,
+          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: ListTile(
             leading: Image.asset(
               product.imageUrl,
-              width: 80,
-              height: 80,
+              width: 120,
+              height: 120,
               fit: BoxFit.cover,
             ),
-            title: Text(product.name),
-            subtitle: Text(product.description),
+            title: Text(
+              product.name,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 22.0,
+                color: Colors.deepPurple, // Color del texto
+              ),
+            ),
+            subtitle: Text(
+              product.description,
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey, // Color del texto
+              ),
+            ),
             trailing: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   '\$${NumberFormat('#,###', 'es_CO').format(product.price)}',
-                  style: Theme.of(context).textTheme.bodyText2,
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple, // Color del texto
+                  ),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: () {
                     addToCart(product);
                   },
-                  child: Text('Agregar al Carrito'),
+                  icon: Icon(Icons.add_shopping_cart),
+                  label: Text('Agregar al Carrito'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.deepPurple, // Color del botón
+                    onPrimary: Colors.white, // Color del texto del botón
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -210,59 +214,101 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: cart.length,
-            itemBuilder: (ctx, index) {
-              final product = cart[index];
-              return Card(
-                elevation: 4,
-                margin: EdgeInsets.all(16),
-                child: ListTile(
-                  leading: Image.asset(
-                    product.imageUrl,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
-                  title: Text(product.name),
-                  subtitle: Text(product.description),
-                  trailing: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '\$${NumberFormat('#,###', 'es_CO').format(product.price)}',
-                        style: Theme.of(context).textTheme.bodyText2,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Carrito de Compras'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: cart.length,
+              itemBuilder: (ctx, index) {
+                final product = cart[index];
+                return Card(
+                  elevation: 6.0,
+                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: ListTile(
+                    leading: Image.asset(
+                      product.imageUrl,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                    ),
+                    title: Text(
+                      product.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22.0,
+                        color: Colors.deepPurple, // Color del texto
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          removeFromCart(product);
-                        },
-                        child: Text('Eliminar'),
+                    ),
+                    subtitle: Text(
+                      product.description,
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Colors.grey, // Color del texto
                       ),
-                    ],
+                    ),
+                    trailing: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '\$${NumberFormat('#,###', 'es_CO').format(product.price)}',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple, // Color del texto
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            removeFromCart(product);
+                          },
+                          icon: Icon(Icons.delete),
+                          label: Text('Eliminar Producto'),
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.red, // Color del botón
+                            onPrimary:
+                                Colors.white, // Color del texto del botón
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Valor Total: \$${NumberFormat('#,###', 'es_CO').format(calculateTotalPrice())}',
+              style: TextStyle(
+                fontSize: 22.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple, // Color del texto
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              sendWhatsAppMessage();
             },
+            child: Text('Enviar a WhatsApp'),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.green, // Color del botón
+              onPrimary: Colors.white, // Color del texto del botón
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
           ),
-        ),
-        Text(
-          'Valor Total: \$${NumberFormat('#,###', 'es_CO').format(calculateTotalPrice())}',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            sendWhatsAppMessage();
-          },
-          child: Text('Enviar a WhatsApp'),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
