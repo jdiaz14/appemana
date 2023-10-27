@@ -10,18 +10,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  animations: ^2.0.1
   url_launcher: ^6.0.10
   cupertino_icons: ^1.0.2
-  intl: ^0.17.0 # Agregada la dependencia intl
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^2.0.3
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/product1.jpg
-    - assets/product2.jpg
-
+    - assets/
